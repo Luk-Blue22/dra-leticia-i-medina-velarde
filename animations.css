@@ -1,0 +1,73 @@
+/* Animaciones sutiles. Solo transform y opacity (más sombra suave en botones).
+   Todo lo que oculta contenido cuelga de html.anim-on, que SOLO agrega animations.js
+   cuando cargó bien, no hay prefers-reduced-motion y la URL no trae ?captura=1.
+   Sin esa clase el sitio se ve exactamente igual que antes. */
+
+html { scroll-behavior: smooth; }
+
+/* ---------- Revelado al cargar / al hacer scroll ---------- */
+/* Ocultar es instantáneo (sin transición); solo el revelado se anima. */
+html.anim-on [data-reveal] { opacity: 0; transform: translateY(20px); }
+html.anim-on [data-reveal][data-hero] { transform: translateY(18px); }
+html.anim-on [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 700ms cubic-bezier(.22, .61, .36, 1) var(--d, 0ms),
+    transform 700ms cubic-bezier(.22, .61, .36, 1) var(--d, 0ms);
+}
+html.anim-on [data-reveal][data-hero].is-in { transition-duration: 800ms, 800ms; }
+
+/* Una vez revelado: sin retraso, listo para los hover (no interfiere con las clases de Tailwind) */
+html.anim-on [data-reveal].is-done {
+  transition:
+    transform 300ms ease,
+    opacity 300ms ease,
+    box-shadow 300ms ease,
+    background-color 300ms ease,
+    color 300ms ease;
+}
+
+/* ---------- Hover (solo dispositivos con puntero) ---------- */
+html.anim-on .hv-lift:not([data-reveal]) { transition: transform 300ms ease, box-shadow 300ms ease, opacity 300ms ease; }
+html.anim-on a.hv-btn { transition: transform 300ms ease, box-shadow 300ms ease, background-color 300ms ease, color 300ms ease; }
+
+@media (hover: hover) and (min-width: 768px) {
+  html.anim-on .hv-lift.is-done:hover,
+  html.anim-on .hv-lift:not([data-reveal]):hover { transform: translateY(-4px); }
+}
+@media (hover: hover) {
+  html.anim-on a.hv-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px -8px rgba(133, 79, 85, .38);
+  }
+}
+
+/* ---------- Pulso del botón flotante de WhatsApp (móvil): 3 ciclos y se detiene ---------- */
+html.anim-on a.pulse-fab { isolation: isolate; }
+html.anim-on a.pulse-fab::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 9999px;
+  background: #854f55;
+  opacity: 0;
+  pointer-events: none;
+  animation: fab-pulse 2s ease-out 1.2s 3 both;
+}
+@keyframes fab-pulse {
+  0%   { transform: scale(1);   opacity: .35; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+
+/* ---------- Modo captura / animaciones desactivadas ---------- */
+html.anim-off, html.anim-off.scroll-smooth { scroll-behavior: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  html, html.scroll-smooth { scroll-behavior: auto; }
+  html.anim-on [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+  html.anim-on .hv-lift, html.anim-on a.hv-btn { transition: none !important; }
+  html.anim-on .hv-lift:hover, html.anim-on a.hv-btn:hover { transform: none !important; }
+  html.anim-on a.pulse-fab::after { animation: none !important; display: none; }
+}
